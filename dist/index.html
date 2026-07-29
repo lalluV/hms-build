@@ -8,6 +8,37 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     />
     <title>Healeka HMS</title>
+    <script>
+      (function () {
+        var path = location.pathname.replace(/\/+$/, "") || "/";
+        var isPublic =
+          path.indexOf("/view/prescription/") === 0 || path === "/register-op";
+        if (isPublic) document.documentElement.classList.add("public-patient");
+      })();
+    </script>
+    <style>
+      html.public-patient #root:empty {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f7fb;
+      }
+      html.public-patient #root:empty::after {
+        content: "";
+        width: 28px;
+        height: 28px;
+        border: 2px solid #e2e8f0;
+        border-top-color: #233e82;
+        border-radius: 50%;
+        animation: public-spin 0.7s linear infinite;
+      }
+      @keyframes public-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,11 +46,20 @@
       rel="stylesheet"
     />
     <link
+      class="hms-material-icons"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/assets/index-714b52e0.js"></script>
-    <link rel="stylesheet" href="/assets/index-7c836220.css">
+    <script>
+      (function () {
+        if (!document.documentElement.classList.contains("public-patient"))
+          return;
+        // Patients don't need Material icons — skip that font download on mobile.
+        var iconLink = document.querySelector("link.hms-material-icons");
+        if (iconLink) iconLink.remove();
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-e7f2e2cd.js"></script>
   </head>
   <body>
     <div id="root"></div>
