@@ -12,7 +12,9 @@
       (function () {
         var path = location.pathname.replace(/\/+$/, "") || "/";
         var isPublic =
-          path.indexOf("/view/prescription/") === 0 || path === "/register-op";
+          path.indexOf("/view/prescription/") === 0 ||
+          path.indexOf("/view/report/") === 0 ||
+          path === "/register-op";
         if (isPublic) document.documentElement.classList.add("public-patient");
       })();
     </script>
@@ -59,7 +61,7 @@
         if (iconLink) iconLink.remove();
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-6397a5f7.js"></script>
+    <script type="module" crossorigin src="/assets/index-e1e1133f.js"></script>
   </head>
   <body>
     <div id="root"></div>
