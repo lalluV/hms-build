@@ -83,6 +83,42 @@
         letter-spacing: 0.02em;
         color: #64748b;
       }
+      /* Boot watchdog fallback (shown only if React never mounts) */
+      #hms-boot-help {
+        position: fixed;
+        inset: 0;
+        z-index: 99998;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #f5f7fb;
+        font-family: Inter, system-ui, sans-serif;
+        padding: 24px;
+        text-align: center;
+      }
+      #hms-boot-help .hms-boot-help-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      #hms-boot-help .hms-boot-help-text {
+        font-size: 13px;
+        color: #64748b;
+        max-width: 320px;
+      }
+      #hms-boot-help button {
+        margin-top: 4px;
+        border: 0;
+        border-radius: 8px;
+        background: #233e82;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 22px;
+        cursor: pointer;
+      }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -104,10 +140,60 @@
         if (iconLink) iconLink.remove();
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-cc442749.js"></script>
+    <script type="module" crossorigin src="/assets/index-8694b8c5.js"></script>
   </head>
   <body>
     <div id="root"></div>
     
+    <script>
+      // Boot watchdog: if React hasn't mounted after 20s (bundle stalled or
+      // failed after the tab sat idle / the device slept — network not back
+      // yet, stale chunks after a deploy), don't leave the #root:empty
+      // spinner up forever. Retry once automatically, then offer a manual
+      // reload. Shares its retry guard with src/main.jsx.
+      (function () {
+        var BOOT_TIMEOUT_MS = 20000;
+        function rootIsEmpty() {
+          var root = document.getElementById("root");
+          return !root || root.childElementCount === 0;
+        }
+        function showBootHelp() {
+          if (document.getElementById("hms-boot-help") || !rootIsEmpty())
+            return;
+          var box = document.createElement("div");
+          box.id = "hms-boot-help";
+          box.innerHTML =
+            '<div class="hms-boot-help-title">Taking longer than usual\u2026</div>' +
+            '<div class="hms-boot-help-text">The connection may have dropped while this site was idle. Check your connection, then reload.</div>' +
+            '<button type="button" onclick="window.location.reload()">Reload</button>';
+          document.body.appendChild(box);
+          var watcher = window.setInterval(function () {
+            if (!rootIsEmpty()) {
+              box.remove();
+              window.clearInterval(watcher);
+            }
+          }, 1000);
+        }
+        window.setTimeout(function () {
+          if (!rootIsEmpty()) return;
+          try {
+            var last = Number(
+              sessionStorage.getItem("hms-boot-retry-at") || 0,
+            );
+            if (Date.now() - last > 60000) {
+              sessionStorage.setItem(
+                "hms-boot-retry-at",
+                String(Date.now()),
+              );
+              window.location.reload();
+              return;
+            }
+          } catch (e) {
+            /* sessionStorage unavailable — fall through to the help panel */
+          }
+          showBootHelp();
+        }, BOOT_TIMEOUT_MS);
+      })();
+    </script>
   </body>
 </html>
